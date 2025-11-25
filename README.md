@@ -11,7 +11,8 @@ A Python script to translate subtitle files (SRT) or extract and translate subti
 
 ## Prerequisites
 
-- **Python 3.11+**
+- **uv**: This script uses `uv` for dependency management.
+  - Install instructions: [https://docs.astral.sh/uv/](https://docs.astral.sh/uv/)
 - **FFmpeg**: Required for processing MKV files.
   - macOS: `brew install ffmpeg`
   - Linux: `sudo apt install ffmpeg`
@@ -20,23 +21,17 @@ A Python script to translate subtitle files (SRT) or extract and translate subti
 ## Installation
 
 1.  Clone this repository.
-2.  Install the required Python packages:
-
-    ```bash
-    pip install openai pysrt
-    ```
-
-    *Note: The script also includes `uv` metadata headers for easy execution with `uv run`.*
+2.  That's it! `uv` will handle dependencies automatically when you run the script.
 
 ## Usage
 
 1.  Start your local LLM server (e.g., LM Studio) and ensure it is listening (default: `http://localhost:1234/v1`).
-2.  Run the script with your input file:
+2.  Run the script using `uv run`:
 
     ```bash
-    python translate.py input_movie.mkv
+    uv run translate.py input_movie.mkv
     # or
-    python translate.py subtitles.srt
+    uv run translate.py subtitles.srt
     ```
 
 3.  Enter the target language when prompted (press Enter for French).
@@ -51,7 +46,7 @@ A Python script to translate subtitle files (SRT) or extract and translate subti
 Example with custom settings:
 
 ```bash
-python translate.py movie.srt --model "mistral-7b-instruct" --api-url "http://localhost:8000/v1"
+uv run translate.py movie.srt --model "mistral-7b-instruct" --api-url "http://localhost:8000/v1"
 ```
 
 ## Output
