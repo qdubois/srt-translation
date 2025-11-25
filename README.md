@@ -42,11 +42,12 @@ A Python script to translate subtitle files (SRT) or extract and translate subti
 - `--api-url`: URL of the LLM API (default: `http://localhost:1234/v1`).
 - `--api-key`: API Key for the server (default: `lm-studio`).
 - `--model`: Model identifier to use (default: `qwen/qwen3-8b`).
+- `--debug`: Enable debug output to print original and translated text.
 
 Example with custom settings:
 
 ```bash
-uv run translate.py movie.srt --model "mistral-7b-instruct" --api-url "http://localhost:8000/v1"
+uv run translate.py movie.srt --model "mistralai/mistral-small-3.2" --api-url "http://localhost:8000/v1"
 ```
 
 ## Output

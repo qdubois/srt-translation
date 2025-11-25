@@ -11,6 +11,7 @@ import sys
 import os
 import shutil
 import subprocess
+import re
 from openai import OpenAI
 import pysrt
 
@@ -40,7 +41,7 @@ def extract_subtitles(mkv_path):
         print(f"Error extracting subtitles: {e}", file=sys.stderr)
         return None
 
-def translate_text(client, text, target_language="French", model="local-model"):
+def translate_text(client, text, target_language="French", model="local-model", debug=False):
     """
     Translates text from English to the target language using the LM Studio API.
     """
@@ -48,12 +49,21 @@ def translate_text(client, text, target_language="French", model="local-model"):
         response = client.chat.completions.create(
             model=model,
             messages=[
-                {"role": "system", "content": f"You are a professional subtitle translator. Translate the following English subtitle text to {target_language}. Maintain the tone and context. Return ONLY the translated text, no explanations or quotes."},
+                {"role": "system", "content": f"/no_think You are a professional subtitle translator. Translate the following English subtitle text to {target_language}. Maintain the tone and context. Return ONLY the translated text, no explanations or quotes."},
                 {"role": "user", "content": text}
             ],
             temperature=0.3,
+            extra_body={"reasoning": {"effort": "low"}}
         )
-        return response.choices[0].message.content.strip()
+        translated = response.choices[0].message.content.strip()
+        
+        # Remove <think> blocks from reasoning models
+        translated = re.sub(r'<think>.*?</think>', '', translated, flags=re.DOTALL).strip()
+
+        if debug:
+            print(f"\n[DEBUG] Original: {text}")
+            print(f"[DEBUG] Translated: {translated}")
+        return translated
     except Exception as e:
         print(f"Error translating line '{text}': {e}", file=sys.stderr)
         return text  # Return original text on failure
@@ -65,6 +75,7 @@ def main():
     parser.add_argument("--api-url", default="http://localhost:1234/v1", help="LM Studio API URL (default: http://localhost:1234/v1)")
     parser.add_argument("--api-key", default="lm-studio", help="API Key (default: lm-studio)")
     parser.add_argument("--model", default="qwen/qwen3-8b", help="Model identifier to use in LM Studio")
+    parser.add_argument("--debug", action="store_true", help="Enable debug output to print original and translated text")
 
     args = parser.parse_args()
 
@@ -125,11 +136,12 @@ def main():
         if not original_text.strip():
             continue
             
-        translated_text = translate_text(client, original_text, target_language, args.model)
+        translated_text = translate_text(client, original_text, target_language, args.model, args.debug)
         sub.text = translated_text
         
         # Simple progress indicator
-        print(f"[{i+1}/{len(subs)}] Translated", end='\r')
+        if not args.debug:
+            print(f"[{i+1}/{len(subs)}] Translated", end='\r')
 
     print(f"\nSaving translations to {output_file}...")
     subs.save(output_file, encoding='utf-8')
