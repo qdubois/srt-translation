@@ -1,13 +1,15 @@
 # SRT Translator
 
-A Python script to translate subtitle files (SRT) or extract and translate subtitles from video files (MKV) using a local LLM (via LM Studio) or any OpenAI-compatible API.
+A Python script to translate subtitle files (SRT) or extract and translate subtitles from video files (MKV) using a local LLM (via LM Studio) or Google Gemini.
 
 ## Features
 
 - **Translate SRT files**: Translates English subtitles to a target language.
 - **MKV Support**: Automatically extracts the first subtitle track from MKV files using `ffmpeg` before translating.
 - **Interactive Language Selection**: Prompts for the target language (defaults to French).
-- **Local LLM Support**: Designed to work with local models via LM Studio, but compatible with any OpenAI-like API.
+- **Multi-Provider Support**:
+    - **LM Studio**: Work with local models via LM Studio (OpenAI-compatible).
+    - **Google Gemini**: Use Google's Gemini models for translation.
 
 ## Prerequisites
 
@@ -16,7 +18,8 @@ A Python script to translate subtitle files (SRT) or extract and translate subti
 - **FFmpeg**: Required for processing MKV files.
   - macOS: `brew install ffmpeg`
   - Linux: `sudo apt install ffmpeg`
-- **LM Studio** (or another OpenAI-compatible server) running locally.
+- **LM Studio** (if using local models) running locally.
+- **Gemini API Key** (if using Gemini).
 
 ## Installation
 
@@ -25,13 +28,24 @@ A Python script to translate subtitle files (SRT) or extract and translate subti
 
 ## Usage
 
+### Using LM Studio (Default)
+
 1.  Start your local LLM server (e.g., LM Studio) and ensure it is listening (default: `http://localhost:1234/v1`).
 2.  Run the script using `uv run`:
 
     ```bash
     uv run translate.py input_movie.mkv
-    # or
-    uv run translate.py subtitles.srt
+    ```
+
+### Using Google Gemini
+
+1.  Set your Gemini API key as an environment variable:
+    ```bash
+    export GEMINI_API_KEY="your_api_key_here"
+    ```
+2.  Run the script with the `--provider gemini` flag:
+    ```bash
+    uv run translate.py input_movie.mkv --provider gemini
     ```
 
 3.  Enter the target language when prompted (press Enter for French).
@@ -39,12 +53,20 @@ A Python script to translate subtitle files (SRT) or extract and translate subti
 ### Command Line Arguments
 
 - `input_file`: Path to the input `.srt` or `.mkv` file.
-- `--api-url`: URL of the LLM API (default: `http://localhost:1234/v1`).
-- `--api-key`: API Key for the server (default: `lm-studio`).
-- `--model`: Model identifier to use (default: `qwen/qwen3-8b`).
+- `--provider`: API provider to use (`lm-studio` or `gemini`). Default: `lm-studio`.
+- `--target-language`, `-l`: Target language for translation (e.g., `French`, `Spanish`). If not provided, the script will prompt you.
+- `--api-url`: URL of the LLM API (for LM Studio).
+- `--api-key`: API Key for the server (for LM Studio or Gemini).
+- `--model`: Model identifier to use (e.g., `gemini-1.5-flash` for Gemini).
 - `--debug`: Enable debug output to print original and translated text.
 
-Example with custom settings:
+Example with Gemini and specific language:
+
+```bash
+uv run translate.py movie.srt --provider gemini --target-language Spanish
+```
+
+Example with custom LM Studio settings:
 
 ```bash
 uv run translate.py movie.srt --model "mistralai/mistral-small-3.2" --api-url "http://localhost:8000/v1"
